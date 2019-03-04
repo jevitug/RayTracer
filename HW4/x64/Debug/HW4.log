@@ -1,0 +1,7 @@
+﻿  HW4.cpp
+d:\documents\school\cse167\hw4\hw4\hw4\hw4.cpp(197): fatal error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  readfile.cpp
+d:\documents\school\cse167\hw4\hw4\hw4\readfile.cpp(403): fatal error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  Transform.cpp
+d:\documents\school\cse167\hw4\hw4\hw4\transform.cpp(137): fatal error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  Generating Code...
