@@ -75,6 +75,12 @@ void readfile(const char* filename)
 
 	unsigned int vertCount = 0;
 	unsigned int vertNormalCount = 0;
+	ambient[0] = defaultAmbient[0];
+	ambient[1] = defaultAmbient[1];
+	ambient[2] = defaultAmbient[2];
+
+	numobjects = 0;
+	lightsUsed = 0;
 
     string str, cmd; 
     ifstream in;
@@ -88,6 +94,10 @@ void readfile(const char* filename)
 
         getline (in, str); 
         while (in) {
+
+			
+			
+
             if ((str.find_first_not_of(" \t\r\n") != string::npos) && (str[0] != '#')) {
                 // Ruled out comment and blank lines 
 
@@ -98,32 +108,59 @@ void readfile(const char* filename)
                                     // Up to 10 params for cameras.  
                 bool validinput; // Validity of input 
 
+
                 // Process the light, add it to database.
                 // Lighting Command
-                if (cmd == "light") {
-                    if (numused == numLights) { // No more Lights 
-                        cerr << "Reached Maximum Number of Lights " << numused << " Will ignore further lights\n";
+                if (cmd == "directional" || cmd == "point") {
+                    if (lightsUsed == maxlights) { // No more Lights 
+                        cerr << "Reached Maximum Number of Lights " << lightsUsed << " Will ignore further lights\n";
                     } else {
-                        validinput = readvals(s, 8, values); // Position/color for lts.
+                        validinput = readvals(s, 6, values); // Position/color for lts.
                         if (validinput) {
 
-                            // YOUR CODE FOR HW 2 HERE. DONE
-                            // Note that values[0...7] shows the read in values 
-                            // Make use of lightposn[] and lightcolor[] arrays in variables.h
-                            // Those arrays can then be used in display too.  
-							lightposn[numused * 4] = values[0];
-							lightposn[(numused * 4) + 1] = values[1];
-							lightposn[(numused * 4) + 2] = values[2];
-							lightposn[(numused * 4) + 3] = values[3];
-							lightcolor[(numused * 4)] = values[4];
-							lightcolor[(numused * 4) + 1] = values[5];
-							lightcolor[(numused * 4) + 2] = values[6];
-							lightcolor[(numused * 4) + 3] = values[7];
 
-                            ++numused; 
+							
+
+							lights[lightsUsed].dirPos.x = values[0];
+							lights[lightsUsed].dirPos.y = values[1];
+							lights[lightsUsed].dirPos.z = values[2];
+
+							lights[lightsUsed].color.x = values[3];
+							lights[lightsUsed].color.y = values[4];
+							lights[lightsUsed].color.z = values[5];
+
+							
+							if (cmd == "directional")
+							{
+								lights[lightsUsed].type = directional;
+								cout << "directional light created";
+							}
+							else
+							{
+								lights[lightsUsed].type = point;
+								cout << "Point light created";
+							}
+
+							cout << lightsUsed << endl;
+                            ++lightsUsed; 
                         }
                     }
                 }
+
+
+				// light attenuation command
+				else if (cmd == "attenuation")
+				{
+					validinput = readvals(s, 3, values); // attenuation values 
+					if (validinput) 
+					{
+						attenuation[1] = values[1];
+						attenuation[2] = values[2];
+						attenuation[3] = values[3];
+						cout << "Attenuation Read" << endl;
+					}
+				}
+
 
                 // Material Commands 
                 // Ambient, diffuse, specular, shininess properties for each object.
@@ -132,37 +169,42 @@ void readfile(const char* filename)
                 // Note that no transforms/stacks are applied to the colors. 
 
                 else if (cmd == "ambient") {
-                    validinput = readvals(s, 4, values); // colors 
+                    validinput = readvals(s, 3, values); // colors 
                     if (validinput) {
-                        for (i = 0; i < 4; i++) {
+                        for (i = 0; i < 3; i++) {
                             ambient[i] = values[i]; 
                         }
+						cout << "Ambient Read" << endl;
                     }
                 } else if (cmd == "diffuse") {
-                    validinput = readvals(s, 4, values); 
+                    validinput = readvals(s, 3, values); 
                     if (validinput) {
-                        for (i = 0; i < 4; i++) {
+                        for (i = 0; i < 3; i++) {
                             diffuse[i] = values[i]; 
                         }
+						cout << "diffuse Read" << endl;
                     }
                 } else if (cmd == "specular") {
-                    validinput = readvals(s, 4, values); 
+                    validinput = readvals(s, 3, values); 
                     if (validinput) {
-                        for (i = 0; i < 4; i++) {
+                        for (i = 0; i < 3; i++) {
                             specular[i] = values[i]; 
                         }
+						cout << "specular Read" << endl;
                     }
                 } else if (cmd == "emission") {
-                    validinput = readvals(s, 4, values); 
+                    validinput = readvals(s, 3, values); 
                     if (validinput) {
-                        for (i = 0; i < 4; i++) {
+                        for (i = 0; i < 3; i++) {
                             emission[i] = values[i]; 
                         }
+						cout << "emission Read" << endl;
                     }
                 } else if (cmd == "shininess") {
                     validinput = readvals(s, 1, values); 
                     if (validinput) {
                         shininess = values[0]; 
+						cout << "Shininess Read" << endl;
                     }
                 } else if (cmd == "size") {
                     validinput = readvals(s,2,values); 
@@ -172,6 +214,7 @@ void readfile(const char* filename)
 						// Initialize pixel array
 						int pix = w * h;
 						pixels = new BYTE[3 * pix];
+						std::cout << "Size Read: " << w << ", " << h << endl;
                     } 
                 } else if (cmd == "camera") {
                     validinput = readvals(s,10,values); // 10 values eye cen up fov
@@ -189,18 +232,20 @@ void readfile(const char* filename)
 						fovy = values[9];
 
 						// TODO: Unsure what to set this too.
-						fovx = fovy; 
+						fovx = 2 * atan(tan(fovy / 2.0f) * (w / h));
+						cout << "Camera Read" << endl;
                     }
                 }
 
 				// VERTEX BLOCK=========================================================
 				else if (cmd == "maxverts")
 				{
-					validinput = readvals(s, 10, values);
+					validinput = readvals(s, 1, values);
 					if (validinput)
 					{
 						int maxVertex = values[0];
-						vertex * vertexArray = new vertex[maxVertex];
+						vertexArray = new vertex[maxVertex];
+						cout << "Maxverts Read: " << maxVertex << endl;
 					}
 				}
 
@@ -208,11 +253,12 @@ void readfile(const char* filename)
 				else if (cmd == "maxvertnorms") 
 				{
 						
-					validinput = readvals(s, 10, values);
+					validinput = readvals(s, 1, values);
 					if (validinput)
 					{
 						int maxVertexNormal = values[0];
-						vertex * vertexNormalArray = new vertex[maxVertexNormal];
+						vertexNormalArray = new vertex[maxVertexNormal];
+						cout << "maxvert NORMAL read: " << maxVertexNormal << endl;
 					}
 					
 				}
@@ -221,30 +267,32 @@ void readfile(const char* filename)
 				// process vertex
 				else if (cmd == "vertex") 
                 {
-					validinput = readvals(s, 10, values);
+					validinput = readvals(s, 3, values);
 					if (validinput)
 					{
 						
-						for (int i = 0; i < 3; i++) {
-							vertexArray[vertCount].transform = Transform::translate(values[0], values[1], values[2]);
-						}
+						
+						vertexArray[vertCount].transform = Transform::translate(values[0], values[1], values[2]);
+						
 						vertCount++;
+						cout << "Vertex Read: " << vertCount << endl;
 					}
 				}
 
 				// done
 				else if (cmd == "vertexnormal") 
                 {
-					validinput = readvals(s, 10, values);
+					validinput = readvals(s, 6, values);
 					if (validinput)
 					{
 						
-						for (int i = 0; i < 3; i++) {
+						//for (int i = 0; i < 3; i++) {
 							vertexNormalArray[vertNormalCount].transform = Transform::translate(values[0], values[1], values[2]);
 							vertexNormalArray[vertNormalCount].normal = glm::vec3(values[0 + 3], values[1 + 3], values[2 + 3]);
 
-						}
+						//}
 						vertNormalCount++;
+						cout << "Vertex Normal Read: " << vertNormalCount << endl;
 					}
 				}
 
@@ -256,7 +304,7 @@ void readfile(const char* filename)
 					else
 					{
 
-						validinput = readvals(s, 10, values);
+						validinput = readvals(s, 3, values);
 						if (validinput)
 						{
 							object * obj = &(objects[numobjects]);

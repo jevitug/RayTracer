@@ -33,14 +33,18 @@ void saveScreenshot(string fname) {
 	std::cout << "Saving screenshot: " << fname << "\n";
 
 	FreeImage_Save(FIF_PNG, img, fname.c_str(), 0);
-	delete pixels;
+
 }
 
 
 // TODO
 // Shortcut ease of use function for setting the value of a pixel.
-void setPixel(int i, int j, vec3)
+void setPixel(int i, int j, vec3 rgb)
 {
+	int base = j * (3 * w) + (i * 3);//
+	pixels[base] = rgb.x;
+	pixels[base + 1] = rgb.y; // ((float)base / (float)( 3 * w * h)) * 255.0f;
+	pixels[base + 2] = rgb.z;
 	return;
 }
 
@@ -143,7 +147,8 @@ void writeImage() {
 
 			// CALCULATE COLOR
 			vec3 color = computeColor(ray, minT, closestObj);
-			setPixel(pixelW, pixelH, color);
+			vec3 test(150, 240, 150);
+			setPixel(pixelW, pixelH, test);
 		}
 	}
 
@@ -157,10 +162,12 @@ void setupAcceleration()
 
 }
 
+
+
 int main(int argc, char* argv[]) {
 
 	if (argc < 2) {
-		cerr << "Usage: transforms scenefile [grader input (optional)]\n";
+		cerr << "Usage: transforms scenefile\n";
 		exit(-1);
 	}
 	//FreeImage_AcquireMemory
@@ -187,7 +194,7 @@ int main(int argc, char* argv[]) {
 	writeImage();
 
 	//save image to file
-	saveScreenshot("screenShot");
+	saveScreenshot("screenShot.png");
 	
 	FreeImage_DeInitialise();
 

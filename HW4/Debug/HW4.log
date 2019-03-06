@@ -1,11 +1,6 @@
-﻿  HW4.cpp
+﻿  readfile.cpp
 d:\documents\school\cse167\hw4\hw4\hw4\transform.h(24): warning C4305: 'initializing': truncation from 'double' to 'float'
-  readfile.cpp
-d:\documents\school\cse167\hw4\hw4\hw4\transform.h(24): warning C4305: 'initializing': truncation from 'double' to 'float'
-d:\documents\school\cse167\hw4\hw4\hw4\variables.h(72): warning C4091: 'extern ': ignored on left of 'vertex' when no variable is declared
-d:\documents\school\cse167\hw4\hw4\hw4\readfile.cpp(202): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-d:\documents\school\cse167\hw4\hw4\hw4\readfile.cpp(214): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-  Transform.cpp
-d:\documents\school\cse167\hw4\hw4\hw4\transform.h(24): warning C4305: 'initializing': truncation from 'double' to 'float'
-  Generating Code...
+d:\documents\school\cse167\hw4\hw4\hw4\variables.h(83): warning C4091: 'extern ': ignored on left of 'vertex' when no variable is declared
+d:\documents\school\cse167\hw4\hw4\hw4\readfile.cpp(246): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+d:\documents\school\cse167\hw4\hw4\hw4\readfile.cpp(259): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
   HW4.vcxproj -> D:\Documents\School\cse167\hw4\HW4\Debug\HW4.exe

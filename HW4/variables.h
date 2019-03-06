@@ -49,27 +49,38 @@ EXTERN float sx, sy; // the scale in x and y
 EXTERN float tx, ty; // the translation in x and y
 
 // Lighting parameter array, similar to that in the fragment shader
-const int numLights = 10;
-EXTERN float lightposn[4 * numLights]; // Light Positions
-EXTERN float lightcolor[4 * numLights]; // Light Colors
-EXTERN float lightransf[4 * numLights]; // Lights transformed by modelview
-EXTERN int numused;                     // How many lights are used 
+//const int numLights = 10;
+//EXTERN float lightposn[4 * numLights]; // Light Positions
+//EXTERN float lightcolor[4 * numLights]; // Light Colors
+//EXTERN float lightransf[4 * numLights]; // Lights transformed by modelview
+ 
 
 // Materials (read from file) 
 // With multiple objects, these are colors for each.
-EXTERN float ambient[4];
-EXTERN float diffuse[4];
-EXTERN float specular[4];
-EXTERN float emission[4];
+const float defaultAmbient[3] = { 0.2f, 0.2f, 0.2f };
+EXTERN float ambient[3];
+EXTERN float diffuse[3];
+EXTERN float specular[3];
+EXTERN float emission[3];
 EXTERN float shininess;
+EXTERN float attenuation[3];
 
+
+const int maxlights = 20;
+ enum lightType { directional, point };
+EXTERN struct light {
+	lightType type;
+	vec3 dirPos;
+	vec3 color;
+} lights[maxlights];
+EXTERN int lightsUsed;                     // How many lights are used
 
 EXTERN struct vertex {
 	mat4 transform;
 
 	// normal of vertex. use if needed.
 	glm::vec3 normal;
-};
+}; 
 
 
 // For multiple objects, read from a file.  
