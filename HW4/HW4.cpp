@@ -86,14 +86,16 @@ float rayTraceSphere(const vec3& origin, const vec3& ray, const object & sphereO
 	//cout << "Ray Trace Sphere: " << ray.x <<", "<< ray.y<<", " <<ray.z << " :: ";
 	//vec4 usedRay = modelview * vec4(ray.x, ray.y, ray.z, 1);
 	//vec3 modelRay = vec3(usedRay) / usedRay.w;
-	//vec3 modelRay = ray;
+	vec3 modelRay = ray ;
 	//vec3 modelRay = vec3(usedRay);
-	vec3 modelRay = Transform::applyTrans(modelview,ray + origin);
-	vec3 spherePos = vec3 ( modelview * sphereObj.transform * vec4(0,0,0,1));
-	//vec3 spherePos = vec3(sphereObj.transform * vec4(0, 0, 0, 1));
+
+	//vec3 modelRay = Transform::applyTrans(modelview,ray + origin);
+	//vec3 spherePos = vec3 ( modelview * sphereObj.transform * vec4(0,0,0,1));
+	
+	vec3 spherePos = vec3(sphereObj.transform * vec4(0, 0, 0, 1));
 	//cout << spherePos.x << ", " << spherePos.y << ", " << spherePos.z << endl;
-	//vec3 rayOrigin = origin;
-	vec3 rayOrigin = Transform::applyTrans(modelview,origin);
+	vec3 rayOrigin = origin;
+	//vec3 rayOrigin = Transform::applyTrans(modelview,origin);
 	//vec3 rayOrigin = vec3(0,0,0);
 	//cout << rayOrigin.x<<","<< rayOrigin.y<<", "<< rayOrigin.z << endl;
 
@@ -140,13 +142,20 @@ float rayTraceSphere(const vec3& origin, const vec3& ray, const object & sphereO
 float rayTraceTriangle(const vec3& origin, const vec3& ray, const object & triangleObj)
 {
 
-
+	/*
 	vec3 useRay = Transform::applyTrans(modelview, ray + origin);
 	vec3 rayOrigin = Transform::applyTrans(modelview, origin);
 
 	vec3 A = vec3(modelview * triangleObj.verticies[0].transform * vec4(0, 0, 0, 1));
 	vec3 B = vec3(modelview * triangleObj.verticies[1].transform * vec4(0, 0, 0, 1));
 	vec3 C = vec3(modelview * triangleObj.verticies[2].transform * vec4(0, 0, 0, 1));
+	*/
+	vec3 useRay = ray ;
+	vec3 rayOrigin = origin;
+
+	vec3 A = vec3(triangleObj.verticies[0].transform * vec4(0, 0, 0, 1));
+	vec3 B = vec3( triangleObj.verticies[1].transform * vec4(0, 0, 0, 1));
+	vec3 C = vec3( triangleObj.verticies[2].transform * vec4(0, 0, 0, 1));
 
 
 	vec3 n = glm::normalize(glm::cross(C - A, B - A));

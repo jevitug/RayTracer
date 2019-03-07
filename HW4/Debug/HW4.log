@@ -15,10 +15,4 @@ d:\documents\school\cse167\hw4\hw4\hw4\hw4.cpp(50): warning C4244: '=': conversi
           [
               T=float
           ]
-  readfile.cpp
-d:\documents\school\cse167\hw4\hw4\hw4\transform.h(24): warning C4305: 'initializing': truncation from 'double' to 'float'
-d:\documents\school\cse167\hw4\hw4\hw4\variables.h(82): warning C4091: 'extern ': ignored on left of 'vertex' when no variable is declared
-d:\documents\school\cse167\hw4\hw4\hw4\readfile.cpp(250): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-d:\documents\school\cse167\hw4\hw4\hw4\readfile.cpp(263): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-  Generating Code...
   HW4.vcxproj -> D:\Documents\School\cse167\hw4\HW4\Debug\HW4.exe
