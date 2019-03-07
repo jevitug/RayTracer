@@ -228,11 +228,15 @@ void readfile(const char* filename)
 						// look from, at, up
 						eyeinit = vec3(values[0],values[1],values[2]);
 						center = vec3(values[3], values[4], values[5]);
-						upinit = Transform::upvector(vec3(values[6],values[7],values[8]),center - eyeinit);
+						//upinit = Transform::upvector(vec3(values[6],values[7],values[8]),center - eyeinit);
+						upinit = Transform::upvector(vec3(values[6], values[7], values[8]), center - eyeinit);
 						fovy = values[9];
 
 						// TODO: Unsure what to set this too.
-						fovx = 2 * atan(tan(fovy / 2.0f) * (w / h));
+						float radY = glm::radians(fovy);
+				
+						fovx = glm::degrees ( 2.0f * atan( tan(radY / 2.0f) * ((float)w / (float)h)  )  );
+						cout << fovx<<", " <<fovy << " , "<< endl;
 						cout << "Camera Read" << endl;
                     }
                 }
@@ -272,7 +276,7 @@ void readfile(const char* filename)
 					{
 						
 						
-						vertexArray[vertCount].transform = Transform::translate(values[0], values[1], values[2]);
+						vertexArray[vertCount].transform = transfstack.top() * Transform::translate(values[0], values[1], values[2]);
 						
 						vertCount++;
 						cout << "Vertex Read: " << vertCount << endl;
@@ -287,8 +291,10 @@ void readfile(const char* filename)
 					{
 						
 						//for (int i = 0; i < 3; i++) {
-							vertexNormalArray[vertNormalCount].transform = Transform::translate(values[0], values[1], values[2]);
-							vertexNormalArray[vertNormalCount].normal = glm::vec3(values[0 + 3], values[1 + 3], values[2 + 3]);
+							vertexNormalArray[vertNormalCount].transform = transfstack.top() * Transform::translate(values[0], values[1], values[2]);
+							glm::vec4 temp = transfstack.top() *  glm::vec4(values[3], values[4], values[5], 1);
+							vertexNormalArray[vertNormalCount].normal = glm::vec3(temp) / temp.w;
+							//vertexNormalArray[vertNormalCount].normal = glm::vec3(values[3], values[4], values[5]);
 
 						//}
 						vertNormalCount++;
@@ -321,6 +327,7 @@ void readfile(const char* filename)
 
 							if (cmd == "tri")
 							{
+								
 								obj->verticies[0] = vertexArray[(int)values[0]];
 								obj->verticies[1] = vertexArray[(int)values[1]];
 								obj->verticies[2] = vertexArray[(int)values[2]];
@@ -348,7 +355,7 @@ void readfile(const char* filename)
                     } 
 					else 
 					{
-                        validinput = readvals(s, 1, values); 
+                        validinput = readvals(s, 4, values); 
                         if (validinput) {
                             object * obj = &(objects[numobjects]); 
                             
@@ -373,6 +380,7 @@ void readfile(const char* filename)
 							obj->type = sphere;
 							
                         }
+						//cout << "Read Sphere" <<  
                         ++numobjects; 
                     }
                 }
@@ -439,8 +447,7 @@ void readfile(const char* filename)
         eye = eyeinit; 
         up = upinit; 
         amount = 5;
-        sx = sy = 1.0;  // keyboard controlled scales in x and y 
-        tx = ty = 0.0;  // keyboard controllled translation in x and y  
+       
         useGlu = false; // don't use the glu perspective/lookat fns
 
     } else {

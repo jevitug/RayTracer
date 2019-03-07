@@ -45,8 +45,7 @@ EXTERN mat4 projection, modelview; // The mvp matrices
 EXTERN unsigned int projectionPos, modelviewPos; // Uniform locations of the above matrices
 static enum { view, translate, scale } transop; // which operation to transform 
 enum shape { sphere, triangle, triangleNorm };
-EXTERN float sx, sy; // the scale in x and y 
-EXTERN float tx, ty; // the translation in x and y
+
 
 // Lighting parameter array, similar to that in the fragment shader
 //const int numLights = 10;
@@ -84,7 +83,7 @@ EXTERN struct vertex {
 
 
 // For multiple objects, read from a file.  
-const int maxobjects = 10;
+const int maxobjects = 200;
 EXTERN int numobjects;
 EXTERN struct object {
 	shape type;

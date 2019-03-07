@@ -124,6 +124,11 @@ vec3 Transform::upvector(const vec3 &up, const vec3 & zvec)
 	return ret;
 }
 
+vec3 Transform::applyTrans(mat4 trans, vec3 point)
+{
+	vec4 temp = trans * vec4(point.x,point.y,point.z, 1);
+	return vec3(temp.x, temp.y, temp.z) / temp.w;
+}
 
 Transform::Transform()
 {
