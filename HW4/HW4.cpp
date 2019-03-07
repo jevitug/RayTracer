@@ -29,7 +29,7 @@ using namespace std;
 
 void saveScreenshot(string fname) {
 
-	FIBITMAP *img = FreeImage_ConvertFromRawBits(pixels, w, h, w * 3, 24, 0xFF0000, 0x00FF00, 0x0000FF, false);
+	FIBITMAP *img = FreeImage_ConvertFromRawBits(pixels, w, h, w * 3, 24, 0xFF0000, 0x00FF00, 0x0000FF, true);
 	
 
 	std::cout << "Saving screenshot: " << fname << "\n";
@@ -61,8 +61,10 @@ glm::vec3 createRay(const int& i, const int& j)
 	vec3 vVec = glm::normalize(glm::cross(wVec, uVec));
 
 	// REMEBER: Using midpoint of each pixel. This means that we add 0.5 to each i/j value
-	const float useI = (float)i + 0.5f;
-	const float useJ = (float)j + 0.5f;
+	//const float useI = (float)i + 0.5f;
+	//const float useJ = (float)j + 0.5f;
+	const float useI = (float)j + 0.5f; 
+	const float useJ = (float)i + 0.5f;
 
 	// TODO: I'm not sure what fovx should be set to.
 	//cout << fovx <<endl ;
