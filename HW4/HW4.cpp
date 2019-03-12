@@ -125,7 +125,7 @@ float rayTraceSphere(const vec3& origin, const vec3& ray, const object & sphereO
 	return -1;
 }
 
-// TODO
+
 float rayTraceTriangle(const vec3& origin, const vec3& ray, const object & triangleObj)
 {
 
@@ -173,21 +173,45 @@ float rayTraceTriangle(const vec3& origin, const vec3& ray, const object & trian
 
 
 /*
+* Ray trace the light, at the light index.
+* Returns the distance from the surfacePoint to the light.
+* if path to light is blocked, returns -1.
+*/
+float rayTraceLight(int lightIndex, vec3 surfacePoint)
+{
+	return 1;
+}
+
+/*
 TODO
 Calcualte the resulting pixel color.
 */
-glm::vec3 computeColor(const vec3 & ray, const float & T, const object * hitObj) {
-	//vec3 hit(200, 80, 220);
-	vec3 nothing(10,10,10);
+glm::vec3 computeColor(const vec3 & ray, const vec3 & rayOrigin, const float & T, const object * hitObj) 
+{
+	/* Debug objects code.
+	vec3 nothing(10, 10, 10);
 	vec3 planeC(200, 80, 220);
-	vec3 sphereC(90,200,30);
+	vec3 sphereC(90, 200, 30);
 	if (T != INFINITY) {
 		if (hitObj->type == sphere)
 			return sphereC;
 		return planeC;
 	}
+	*/
 
-	return nothing;
+	vec3 finalColor(0,0,0);
+	vec3 surfacePoint = T * ray + rayOrigin;
+
+	// loop through lights.
+	for (int i = 0; i < lightsUsed; i++)
+	{
+		//check if this light reaches this point.
+		float dist = rayTraceLight(i, surfacePoint);
+
+		// IMPORTANT: use the global var maxDepth to determine the number of recursive calls that should be done for reflection. maxDepth
+
+	}
+	return finalColor;
 }
 
 
@@ -242,8 +266,8 @@ void writeImage() {
 			// At this point, we have found the closest hit object.
 
 			// CALCULATE COLOR
-			vec3 color = computeColor(ray, minT, closestObj);
-			//vec3 test(150, 240, 150);
+			vec3 color = computeColor(ray, eyeinit, minT, closestObj);
+			
 			setPixel(pixelW, pixelH, color);
 		}
 	}
@@ -271,14 +295,8 @@ int main(int argc, char* argv[]) {
 
 	// Read file
 	readfile(argv[1]);
-
-	// Setup camera, and thus modelview
-	//lookAt(const vec3 &eye, const vec3 &center, const vec3 &up)
+	cout << "DONE READING" << endl;
 	
-	modelview = Transform::lookAt(eyeinit, center, upinit);
-
-	
-
 	
 	if (argc > 2) {
 		stringstream tcid;
@@ -290,10 +308,9 @@ int main(int argc, char* argv[]) {
 
 	//compose image
 	writeImage();
-	//setPixel(0, 0, vec3(255,0,255));
-	//setPixel(w-1, 0, vec3(255, 0, 255));
+
 	//save image to file
-	saveScreenshot("screenShot.png");
+	saveScreenshot(fileName);
 	
 	FreeImage_DeInitialise();
 

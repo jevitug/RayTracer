@@ -75,9 +75,20 @@ void readfile(const char* filename)
 
 	unsigned int vertCount = 0;
 	unsigned int vertNormalCount = 0;
+
+	// set default value
 	ambient[0] = defaultAmbient[0];
 	ambient[1] = defaultAmbient[1];
 	ambient[2] = defaultAmbient[2];
+
+	// set default value
+	attenuation[0] = 1;
+	attenuation[1] = 0;
+	attenuation[2] = 0;
+
+	maxDepth = 5;
+
+	fileName = "screenShot.png";
 
 	numobjects = 0;
 	lightsUsed = 0;
@@ -148,15 +159,32 @@ void readfile(const char* filename)
                 }
 
 
+				else if (cmd == "maxdepth")
+				{
+					validinput = readvals(s, 1, values); // depth value
+					if (validinput)
+					{
+						maxDepth = values[0];
+						cout << "Read maxdepth: " << maxDepth << endl;
+					}
+				}
+
+				else if (cmd == "output")
+				{
+						s >> fileName;
+						cout << "Read output: " << fileName << endl;
+				}
+
+
 				// light attenuation command
 				else if (cmd == "attenuation")
 				{
 					validinput = readvals(s, 3, values); // attenuation values 
 					if (validinput) 
 					{
+						attenuation[0] = values[0];
 						attenuation[1] = values[1];
 						attenuation[2] = values[2];
-						attenuation[3] = values[3];
 						cout << "Attenuation Read" << endl;
 					}
 				}
