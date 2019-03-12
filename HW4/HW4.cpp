@@ -82,31 +82,20 @@ glm::vec3 createRay(const int& i, const int& j)
 // If return -1, then no collision occured.
 float rayTraceSphere(const vec3& origin, const vec3& ray, const object & sphereObj)
 {
-	/*
-	If sphere, apply the sphere's transformation on the ray before tracing.
-	*/
-	//cout << "Ray Trace Sphere: " << ray.x <<", "<< ray.y<<", " <<ray.z << " :: ";
-	//vec4 usedRay = modelview * vec4(ray.x, ray.y, ray.z, 1);
-	//vec3 modelRay = vec3(usedRay) / usedRay.w;
-	vec3 modelRay = ray ;
-	//vec3 modelRay = vec3(usedRay);
-
-	//vec3 modelRay = Transform::applyTrans(modelview,ray + origin);
-	//vec3 spherePos = vec3 ( modelview * sphereObj.transform * vec4(0,0,0,1));
 	
-	vec3 spherePos = vec3(sphereObj.transform * vec4(0, 0, 0, 1));
-	//cout << spherePos.x << ", " << spherePos.y << ", " << spherePos.z << endl;
-	vec3 rayOrigin = origin;
-	//vec3 rayOrigin = Transform::applyTrans(modelview,origin);
-	//vec3 rayOrigin = vec3(0,0,0);
-	//cout << rayOrigin.x<<","<< rayOrigin.y<<", "<< rayOrigin.z << endl;
+	// Apply inverse transform to ray, then ray trace against the initial transform of the sphere.
+	vec3 modelRay =  vec3(glm::inverse(sphereObj.outerTransform) * vec4(ray.x, ray.y, ray.z, 0));
+	
+	vec3 spherePos = vec3(sphereObj.baseTransform * vec4(0, 0, 0, 1)); // get the untransformed sphere position.
+	
+	vec3 rayOrigin = vec3(glm::inverse(sphereObj.outerTransform) * vec4(origin.x,origin.y,origin.z,1));
+	
 
 	float a = glm::dot(modelRay, modelRay);
 	float b = 2 * glm::dot(modelRay, rayOrigin - spherePos);
 	float c = glm::dot((rayOrigin - spherePos) ,  (rayOrigin - spherePos)) - (sphereObj.radius * sphereObj.radius);
 	
 	float determinant = (b * b) - (4 * a * c);
-	//cout << determinant << endl;
 
 	// No intersection
 	if (determinant < 0) {
@@ -117,7 +106,6 @@ float rayTraceSphere(const vec3& origin, const vec3& ray, const object & sphereO
 		float t1 = (-b + sqrt(determinant)) / (2 * a);
 		float t2 = (-b - sqrt(determinant)) / (2 * a);
 		
-		  
 		
 		float finalT = -1;
 
@@ -132,11 +120,8 @@ float rayTraceSphere(const vec3& origin, const vec3& ray, const object & sphereO
 			finalT = fmin(t1, t2);
 		}
 
-		
-		//cout << "Determinant not 0: " << t1 << "_" << t2 << ": " << finalT << endl;
-		return finalT;
+		return finalT;	
 	}
-
 	return -1;
 }
 
@@ -144,18 +129,11 @@ float rayTraceSphere(const vec3& origin, const vec3& ray, const object & sphereO
 float rayTraceTriangle(const vec3& origin, const vec3& ray, const object & triangleObj)
 {
 
-	/*
-	vec3 useRay = Transform::applyTrans(modelview, ray + origin);
-	vec3 rayOrigin = Transform::applyTrans(modelview, origin);
-
-	vec3 A = vec3(modelview * triangleObj.verticies[0].transform * vec4(0, 0, 0, 1));
-	vec3 B = vec3(modelview * triangleObj.verticies[1].transform * vec4(0, 0, 0, 1));
-	vec3 C = vec3(modelview * triangleObj.verticies[2].transform * vec4(0, 0, 0, 1));
-	*/
+	
 	vec3 useRay = ray ;
 	vec3 rayOrigin = origin;
 
-	vec3 A = vec3(triangleObj.verticies[0].transform * vec4(0, 0, 0, 1));
+	vec3 A = vec3( triangleObj.verticies[0].transform * vec4(0, 0, 0, 1));
 	vec3 B = vec3( triangleObj.verticies[1].transform * vec4(0, 0, 0, 1));
 	vec3 C = vec3( triangleObj.verticies[2].transform * vec4(0, 0, 0, 1));
 
@@ -240,6 +218,7 @@ void writeImage() {
 				if (objects[i].type == sphere)
 				{
 					T = rayTraceSphere(eyeinit, ray, objects[i]);
+					
 				}
 				else if (objects[i].type == triangle)
 				{
@@ -250,12 +229,6 @@ void writeImage() {
 					T = rayTraceTriangle(eyeinit, ray, objects[i]);
 				}
 
-				// if new closer object found in the trace, replace old closest.
-				//if (T == -1)
-					//cout << "no hit" << endl;
-				
-				//if (T >= 0)
-				//	cout << T << "\t" << minT << endl;
 
 				if (T >= 0 && T < minT)
 				{

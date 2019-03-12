@@ -102,7 +102,7 @@ mat4 Transform::scale(const float &sx, const float &sy, const float &sz)
 // TODO
 mat4 Transform::translate(const float &tx, const float &ty, const float &tz)
 {
-	mat4 ret;
+	mat4 ret(1);
 	// YOUR CODE FOR HW2 HERE
 	ret[3][0] = tx;
 	ret[3][1] = ty;

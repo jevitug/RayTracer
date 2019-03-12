@@ -87,14 +87,15 @@ const int maxobjects = 200;
 EXTERN int numobjects;
 EXTERN struct object {
 	shape type;
-	float radius;
+	float radius;		//UNTRANSFORMED radius. Not effected by any scaling.
 	float ambient[4];
 	float diffuse[4];
 	float specular[4];
 	float emission[4];
 	float shininess;
-	mat4 transform;
-	mat4 outerTransform;
+	mat4 transform;		// final world poistion = outerTransform * baseTransform
+	mat4 baseTransform; // innitaial position of the object, without transformation stack applied to it. 
+	mat4 outerTransform; // transform stack applied to object.
 
 	// verticies of triangle is this is a trinangle
 	vertex verticies[3];

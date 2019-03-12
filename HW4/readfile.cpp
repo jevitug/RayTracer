@@ -277,9 +277,9 @@ void readfile(const char* filename)
 						
 						
 						vertexArray[vertCount].transform = transfstack.top() * Transform::translate(values[0], values[1], values[2]);
-						
+						cout << "Vertex Read: " << vertCount << ", " << (vertexArray[vertCount].transform * vec4(0,0,0,1)).x << endl;
 						vertCount++;
-						cout << "Vertex Read: " << vertCount << endl;
+						
 					}
 				}
 
@@ -297,8 +297,9 @@ void readfile(const char* filename)
 							//vertexNormalArray[vertNormalCount].normal = glm::vec3(values[3], values[4], values[5]);
 
 						//}
+						cout << "Vertex Normal Read: " << vertNormalCount<< ", " <<( vertexNormalArray[vertNormalCount].transform * vec4(0,0,0,1) ).x << endl;
 						vertNormalCount++;
-						cout << "Vertex Normal Read: " << vertNormalCount << endl;
+						
 					}
 				}
 
@@ -325,19 +326,41 @@ void readfile(const char* filename)
 							}
 							obj->shininess = shininess;
 
+
+							
+
+							
+
+
 							if (cmd == "tri")
 							{
+								vertex vert1, vert2, vert3;
+
+								// apply transform to vertices
+								vert1.transform = transfstack.top() * vertexArray[(int)values[0]].transform;
+								vert2.transform = transfstack.top() * vertexArray[(int)values[1]].transform;
+								vert3.transform = transfstack.top() * vertexArray[(int)values[2]].transform;
 								
-								obj->verticies[0] = vertexArray[(int)values[0]];
-								obj->verticies[1] = vertexArray[(int)values[1]];
-								obj->verticies[2] = vertexArray[(int)values[2]];
+								obj->verticies[0] = vert1;
+								obj->verticies[1] = vert2;
+								obj->verticies[2] = vert3;
 								obj->type = triangle;
 							}
 							else if (cmd == "trinormal")
 							{
-								obj->verticies[0] = vertexNormalArray[(int)values[0]];
-								obj->verticies[1] = vertexNormalArray[(int)values[1]];
-								obj->verticies[2] = vertexNormalArray[(int)values[2]];
+								vertex vert1, vert2, vert3;
+
+								vert1.transform = transfstack.top() * vertexNormalArray[(int)values[0]].transform;
+								vert2.transform = transfstack.top() * vertexNormalArray[(int)values[1]].transform;
+								vert3.transform = transfstack.top() * vertexNormalArray[(int)values[2]].transform;
+
+								vert1.normal = vec3(transfstack.top() * vec4(vertexNormalArray[(int)values[0]].normal, 0));
+								vert2.normal = vec3(transfstack.top() *  vec4(vertexNormalArray[(int)values[1]].normal, 0));
+								vert3.normal = vec3(transfstack.top() * vec4(vertexNormalArray[(int)values[2]].normal, 0));
+
+								obj->verticies[0] = vert1;
+								obj->verticies[1] = vert2;
+								obj->verticies[2] = vert3;
 								obj->type = triangleNorm;
 							}
 
@@ -373,6 +396,7 @@ void readfile(const char* filename)
 
                             // Set the object's transform
 							// Apply current transformation to position
+							obj->baseTransform = Transform::translate(values[0], values[1], values[2]);
 							obj->transform = transfstack.top() * Transform::translate(values[0], values[1], values[2]);
 							obj->outerTransform = transfstack.top();
 				
