@@ -77,9 +77,13 @@ void readfile(const char* filename)
 	unsigned int vertNormalCount = 0;
 
 	// set default value
-	ambient[0] = defaultAmbient[0];
-	ambient[1] = defaultAmbient[1];
-	ambient[2] = defaultAmbient[2];
+	//ambient[0] = defaultAmbient[0];
+	//ambient[1] = defaultAmbient[1];
+	//ambient[2] = defaultAmbient[2];
+	ambient[0] = 0.2f;
+	ambient[1] = 0.2f;
+	ambient[2] = 0.2f;
+	
 
 	// set default value
 	attenuation[0] = 1;
@@ -356,7 +360,7 @@ void readfile(const char* filename)
 
 							obj->outerTransform = transfstack.top();
 
-							for (i = 0; i < 4; i++) {
+							for (i = 0; i < 3; i++) {
 								(obj->ambient)[i] = ambient[i];
 								(obj->diffuse)[i] = diffuse[i];
 								(obj->specular)[i] = specular[i];
@@ -424,7 +428,7 @@ void readfile(const char* filename)
 							obj->radius = values[3]; 
 
                             // Set the object's light properties
-                            for (i = 0; i < 4; i++) {
+                            for (i = 0; i < 3; i++) {
                                 (obj->ambient)[i] = ambient[i]; 
                                 (obj->diffuse)[i] = diffuse[i]; 
                                 (obj->specular)[i] = specular[i]; 

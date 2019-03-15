@@ -45,6 +45,8 @@ void setPixel(int i, int j, vec3 rgb)
 {
 	int base = j * (3 * w) + (i * 3);//
 	//int base = i * (3 * h) + (j * 3);
+	//debug
+
 	pixels[base] = rgb.z;
 	pixels[base + 1] = rgb.y; // ((float)base / (float)( 3 * w * h)) * 255.0f;
 	pixels[base + 2] = rgb.x;
@@ -80,11 +82,11 @@ glm::vec3 createRay(const int& i, const int& j)
 
 // TODO
 // If return -1, then no collision occured.
-float rayTraceSphere(const vec3& origin, const vec3& ray, const object & sphereObj)
+float rayTraceSphere(const vec3& origin, const vec3& ray, object & sphereObj)
 {
 	
 	// Apply inverse transform to ray, then ray trace against the initial transform of the sphere.
-	vec3 modelRay =  vec3(glm::inverse(sphereObj.outerTransform) * vec4(ray.x, ray.y, ray.z, 0));
+	vec3 modelRay = vec3(glm::inverse(sphereObj.outerTransform) * vec4(ray.x, ray.y, ray.z, 0));
 	
 	vec3 spherePos = vec3(sphereObj.baseTransform * vec4(0, 0, 0, 1)); // get the untransformed sphere position.
 	
@@ -119,6 +121,11 @@ float rayTraceSphere(const vec3& origin, const vec3& ray, const object & sphereO
 		{
 			finalT = fmin(t1, t2);
 		}
+
+		vec3 hitPoint = (modelRay * finalT) + rayOrigin;
+		vec3 preNormal = glm::normalize(hitPoint - spherePos);
+		vec3 finalNormal = vec3(sphereObj.outerTransform * vec4(preNormal, 0));
+		sphereObj.normal = glm::normalize(finalNormal);
 
 		return finalT;	
 	}
@@ -179,29 +186,33 @@ float rayTraceTriangle(const vec3& origin, const vec3& ray, const object & trian
 */
 float rayTraceLight(int lightIndex, vec3 surfacePoint)
 {
-	vec3 sToLight = lights[lightIndex].dirPos - surfacePoint;
-	float lightDist = glm::length(sToLight);
+	vec3 sToLight = glm::normalize(lights[lightIndex].dirPos - surfacePoint);
 
+	float lightDist = glm::length(lights[lightIndex].dirPos - surfacePoint);
+
+	vec3 usedSurfacePoint = surfacePoint + (0.0001f) * sToLight;
+	
 
 	for (int i = 0; i < numobjects; i++)
 	{
 		float T = -1;
 		if (objects[i].type == sphere)
 		{
-			T = rayTraceSphere(surfacePoint, sToLight, objects[i]);
+			T = rayTraceSphere(usedSurfacePoint, sToLight, objects[i]);
 
 		}
 		else if (objects[i].type == triangle)
 		{
-			T = rayTraceTriangle(surfacePoint, sToLight, objects[i]);
+			T = rayTraceTriangle(usedSurfacePoint, sToLight, objects[i]);
 		}
 		else if (objects[i].type == triangleNorm)
 		{
-			T = rayTraceTriangle(surfacePoint, sToLight, objects[i]);
+			T = rayTraceTriangle(usedSurfacePoint, sToLight, objects[i]);
 		}
 
 		// hit an object and it is closer than the light.
-		if (T != -1 && T < lightDist)
+		float distToObject = glm::length(T * sToLight + usedSurfacePoint);
+		if (T != -1 && distToObject < lightDist)
 		{
 			return -1;
 		}
@@ -209,23 +220,78 @@ float rayTraceLight(int lightIndex, vec3 surfacePoint)
 	return lightDist;
 }
 
-
-vec3 getSurfaceNormal(const vec3 & ray, const vec3 & rayOrigin, const object * hitObj)
+/*
+TODO
+COULD BE ERRORS HERE
+*/
+vec3 getSurfaceNormal(const vec3 & ray, const vec3 & rayOrigin, float T, const vec3 & surfacePoint,const object * hitObj)
 {
-	return vec3(0, 0, 1);
+	vec3 finalNormal(0, 0, 0);
+	if (hitObj->type == sphere) 
+	{
+		
+		vec3 originalPoint = vec3(glm::inverse(hitObj->outerTransform) * vec4(surfacePoint,1));
+		mat4 normMat = glm::transpose(glm::inverse(hitObj->outerTransform));
+		vec3 baseNormal = originalPoint - vec3(hitObj->baseTransform * vec4(0,0,0,1));
+		//vec3 baseNormal = surfacePoint - vec3(hitObj->transform * vec4(0, 0, 0, 1));
+		finalNormal = glm::normalize(vec3(normMat * vec4(baseNormal, 0)));
+		
+		//vec3 modelRay = vec3(glm::inverse(hitObj->outerTransform) * vec4(ray.x, ray.y, ray.z, 0));
+		//vec3 spherePos = vec3(hitObj->baseTransform * vec4(0, 0, 0, 1)); // get the untransformed sphere position.
+		//vec3 rayOriginTrans = vec3(glm::inverse(hitObj->outerTransform) * vec4(rayOrigin.x, rayOrigin.y, rayOrigin.z, 1));
+
+		//vec3 preTransHit = modelRay * T + rayOriginTrans;
+
+		//vec3 preTransNormal = glm::normalize(preTransHit - spherePos);
+
+		//finalNormal = glm::normalize(vec3((hitObj->outerTransform * vec4(preTransNormal,0))));
+		
+		//vec3 preTransNormal = sur
+		//finalNormal = hitObj->normal;
+	}
+	else if (hitObj->type == triangle)
+	{
+		
+		vec3 A = vec3(hitObj->verticies[0].transform * vec4(0, 0, 0, 1));
+		vec3 B = vec3(hitObj->verticies[1].transform * vec4(0, 0, 0, 1));
+		vec3 C = vec3(hitObj->verticies[2].transform * vec4(0, 0, 0, 1));
+		vec3 BA = A - B;
+		vec3 BC = C - B;
+		vec3 basicSurfaceNormal = glm::normalize(glm::cross(BA,BC));
+		float compare = glm::dot(basicSurfaceNormal,glm::normalize(ray));
+		float finalSign = std::copysign(1, compare);
+		finalNormal = basicSurfaceNormal * finalSign * -1.0f;
+	}
+	else if (hitObj->type == triangleNorm)
+	{
+		vec3 A = vec3(hitObj->verticies[0].transform * vec4(0, 0, 0, 1));
+		vec3 B = vec3(hitObj->verticies[1].transform * vec4(0, 0, 0, 1));
+		vec3 C = vec3(hitObj->verticies[2].transform * vec4(0, 0, 0, 1));
+		float alpha = glm::length(surfacePoint - A);
+		float beta = glm::length(surfacePoint - B);
+		float gamma = glm::length(surfacePoint - C);
+	}
+	return glm::normalize(finalNormal);
 }
 
 
-vec3 actualColorCalc(const vec3 direction, const vec3 lightcolor, const vec3 normal, const vec3 halfvec, const vec3 mydiffuse, const vec3 myspecular, const float myshininess, lightType type)
+vec3 actualColorCalc(const vec3 direction, const vec3 lightcolor, const vec3 normal, const vec3 halfvec, const vec3 mydiffuse, const vec3 myspecular, const float myshininess, lightType type, double distToLight)
 {
-
+	//TODO// Implement attenuation.
 	float nDotL = dot(normal, direction);
 	vec3 lambert = mydiffuse * lightcolor * std::fmax(nDotL, 0.0f);
 
 	float nDotH = dot(normal, halfvec);
 	vec3 phong = myspecular * lightcolor * std::pow(std::fmax(nDotH, 0.0f), myshininess);
 
-	vec3 retval = lambert + phong;
+	vec3 retval = (lambert + phong);
+
+	if (type == point)
+	{
+		float attenValue = (attenuation[0]) + (attenuation[1] * distToLight) + (attenuation[2] * distToLight * distToLight);
+		retval = retval / attenValue;
+	}
+	
 	return retval;
 }
 
@@ -234,23 +300,13 @@ vec3 actualColorCalc(const vec3 direction, const vec3 lightcolor, const vec3 nor
 TODO
 Calcualte the resulting pixel color.
 */
-glm::vec3 computeColor(const vec3 & ray, const vec3 & rayOrigin, const float & T, const object * hitObj)
+glm::vec3 computeColor(const vec3 & ray, const vec3 & rayOrigin, const float & T, const object * hitObj, int depth)
 {
-	/*
-	//Debug objects code.
-	vec3 nothing(10, 10, 10);
-	vec3 planeC(200, 80, 220);
-	vec3 sphereC(90, 200, 30);
-	if (T != INFINITY) {
-		if (hitObj->type == sphere)
-			return sphereC;
-		return planeC;
-	}
-	return nothing;
-	*/
-	
-	if (T == INFINITY)
-		return vec3(0, 0, 0);
+
+	// POTENTIAL PROBLEM:: T for ray might not be directly compareable in raytracelight.
+
+	//if (T == INFINITY)
+	//	return vec3(0, 0, 0);
 
 	vec3 finalColor(0,0,0);
 	vec3 surfacePoint = T * ray + rayOrigin;
@@ -260,12 +316,6 @@ glm::vec3 computeColor(const vec3 & ray, const vec3 & rayOrigin, const float & T
 	finalColor.y = (hitObj->ambient[1] + hitObj->emission[1]);
 
 	finalColor.z = (hitObj->ambient[2] + hitObj->emission[2]);
-
-	//finalColor.x = (hitObj->ambient[0]);
-
-	//finalColor.y = (hitObj->ambient[1]);
-
-	//finalColor.z = (hitObj->ambient[2]);
 
 	vec3 diffuse,specular;
 	diffuse.x = hitObj->diffuse[0];
@@ -279,34 +329,50 @@ glm::vec3 computeColor(const vec3 & ray, const vec3 & rayOrigin, const float & T
 	vec3 eyePosition = eyeinit;
 	vec3 eyeDirection = glm::normalize(eyePosition - surfacePoint);
 
-	
+	//cout << finalColor.x<<", "<<finalColor.y<<", "<<finalColor.z <<endl;
 	// loop through lights.
 	for (int i = 0; i < lightsUsed; i++)
 	{
 
-		if (lights[i].type = directional)
+		if (lights[i].type == directional)
 		{
 			vec3 direction = glm::normalize(lights[i].dirPos);
 			vec3 half = glm::normalize(direction + eyeDirection);
-			vec3 normal = getSurfaceNormal(ray, rayOrigin, hitObj);
-			vec3 color = actualColorCalc(direction, lights[i].color,normal,half,diffuse, specular, hitObj->shininess,directional);
+			vec3 normal = getSurfaceNormal(ray, rayOrigin, T,surfacePoint ,hitObj);
+			vec3 color = actualColorCalc(direction, lights[i].color,normal,half,diffuse, specular, hitObj->shininess,directional,0);
 			finalColor += color;
+			//cout << "Bingo" << endl;
 		}
-		else if (lights[i].type = point)
+		else if (lights[i].type == point)
 		{
+			//TODO attenuation.
+			
 			//check if this light reaches this point.
+			//cout << finalColor.x << ", " << finalColor.y << ", " << finalColor.z << endl;
 			float dist = rayTraceLight(i, surfacePoint);
-			if (dist == -1)
+			if (dist >= 0)
 			{
 				// hit did not occur. ignore this light.
-				continue;
+				
+				
+
+
+
+				vec3 lightPosition = lights[i].dirPos;
+				vec3 direction = glm::normalize(lightPosition - surfacePoint); // COULD BE WRONG
+				vec3 half = glm::normalize(direction + eyeDirection);
+				vec3 normal = getSurfaceNormal(ray, rayOrigin, T, surfacePoint, hitObj);
+				vec3 color = actualColorCalc(direction, lights[i].color, normal, half, diffuse, specular, hitObj->shininess, point, dist);
+				//if (hitObj->type == triangle)
+				//	cout << "--------"<< color.x<<"," << color.y<< ", "<<color.z<< normal.x <<"," << normal.y << "," << normal.z << endl;
+				finalColor += color;
 			}
-
-			//vec3 direction = ;
-			//vec3 half = ;
-			//vec3 normal = getSurfaceNormal(ray, rayOrigin, hitObj);
-			//vec3 color = actualColorCalc(direction, lights[i].color, normal, half, diffuse, specular, hitObj->shininess,point);
-
+			else
+			{
+				//if (hitObj->type == triangle)
+					//cout << "Tri Not hit: " << finalColor.x << ", " << finalColor.y << ", " << finalColor.z << endl;
+			}
+			
 		}
 
 
@@ -374,12 +440,15 @@ void writeImage() {
 			}
 
 			// At this point, we have found the closest hit object.
-
-			// CALCULATE COLOR
-			vec3 color = computeColor(ray, eyeinit, minT, closestObj);
-			vec3 myine(0, 1, 1);
-			//setPixel(pixelW, pixelH, myine * 255.0f);
-			setPixel(pixelW, pixelH, color);
+			
+			if (closestObj != nullptr)
+			{
+				// CALCULATE COLOR
+				vec3 color = computeColor(ray, eyeinit, minT, closestObj, 0);
+				vec3 myine(0, 1, 1);
+				//setPixel(pixelW, pixelH, myine * 255.0f);
+				setPixel(pixelW, pixelH, color);
+			}
 		}
 	}
 

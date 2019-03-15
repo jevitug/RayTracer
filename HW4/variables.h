@@ -54,11 +54,11 @@ EXTERN string fileName;
 // Materials (read from file) 
 // With multiple objects, these are colors for each.
 const float defaultAmbient[3] = { 0.2f, 0.2f, 0.2f };
-EXTERN float ambient[3];
-EXTERN float diffuse[3];
-EXTERN float specular[3];
-EXTERN float emission[3];
-EXTERN float shininess;
+EXTERN double ambient[3];
+EXTERN double diffuse[3];
+EXTERN double specular[3];
+EXTERN double emission[3];
+EXTERN double shininess;
 
 EXTERN float attenuation[3]; //global attenuation: const, linear, quadratic
 
@@ -94,20 +94,9 @@ EXTERN struct object {
 	mat4 transform;		// final world poistion = outerTransform * baseTransform
 	mat4 baseTransform; // innitaial position of the object, without transformation stack applied to it. 
 	mat4 outerTransform; // transform stack applied to object.
+	vec3 normal;
 
 	// verticies of triangle is this is a trinangle
 	vertex verticies[3];
 
 } objects[maxobjects];
-
-// Variables to set uniform params for lighting fragment shader 
-EXTERN unsigned int lightcol;
-EXTERN unsigned int lightpos;
-EXTERN unsigned int numusedcol;
-EXTERN unsigned int enablelighting;
-EXTERN unsigned int ambientcol;
-EXTERN unsigned int diffusecol;
-EXTERN unsigned int specularcol;
-EXTERN unsigned int emissioncol;
-EXTERN unsigned int shininesscol;
-
