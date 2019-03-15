@@ -86,6 +86,16 @@ void readfile(const char* filename)
 	attenuation[1] = 0;
 	attenuation[2] = 0;
 
+	emission[0] = 0;
+	emission[1] = 0;
+	emission[2] = 0;
+
+	specular[0] = 0;
+	specular[1] = 0;
+	specular[2] = 0;
+	
+	shininess = 0;
+
 	maxDepth = 5;
 
 	fileName = "screenShot.png";
@@ -202,7 +212,7 @@ void readfile(const char* filename)
                         for (i = 0; i < 3; i++) {
                             ambient[i] = values[i]; 
                         }
-						cout << "Ambient Read" << endl;
+						cout << "Ambient Read: " <<ambient[0]<< ", "<< ambient[1] << ", "<< ambient[2] << ", "<< endl;
                     }
                 } else if (cmd == "diffuse") {
                     validinput = readvals(s, 3, values); 

@@ -45,9 +45,9 @@ void setPixel(int i, int j, vec3 rgb)
 {
 	int base = j * (3 * w) + (i * 3);//
 	//int base = i * (3 * h) + (j * 3);
-	pixels[base] = rgb.x;
+	pixels[base] = rgb.z;
 	pixels[base + 1] = rgb.y; // ((float)base / (float)( 3 * w * h)) * 255.0f;
-	pixels[base + 2] = rgb.z;
+	pixels[base + 2] = rgb.x;
 	return;
 }
 
@@ -179,16 +179,65 @@ float rayTraceTriangle(const vec3& origin, const vec3& ray, const object & trian
 */
 float rayTraceLight(int lightIndex, vec3 surfacePoint)
 {
-	return 1;
+	vec3 sToLight = lights[lightIndex].dirPos - surfacePoint;
+	float lightDist = glm::length(sToLight);
+
+
+	for (int i = 0; i < numobjects; i++)
+	{
+		float T = -1;
+		if (objects[i].type == sphere)
+		{
+			T = rayTraceSphere(surfacePoint, sToLight, objects[i]);
+
+		}
+		else if (objects[i].type == triangle)
+		{
+			T = rayTraceTriangle(surfacePoint, sToLight, objects[i]);
+		}
+		else if (objects[i].type == triangleNorm)
+		{
+			T = rayTraceTriangle(surfacePoint, sToLight, objects[i]);
+		}
+
+		// hit an object and it is closer than the light.
+		if (T != -1 && T < lightDist)
+		{
+			return -1;
+		}
+	}
+	return lightDist;
 }
+
+
+vec3 getSurfaceNormal(const vec3 & ray, const vec3 & rayOrigin, const object * hitObj)
+{
+	return vec3(0, 0, 1);
+}
+
+
+vec3 actualColorCalc(const vec3 direction, const vec3 lightcolor, const vec3 normal, const vec3 halfvec, const vec3 mydiffuse, const vec3 myspecular, const float myshininess, lightType type)
+{
+
+	float nDotL = dot(normal, direction);
+	vec3 lambert = mydiffuse * lightcolor * std::fmax(nDotL, 0.0f);
+
+	float nDotH = dot(normal, halfvec);
+	vec3 phong = myspecular * lightcolor * std::pow(std::fmax(nDotH, 0.0f), myshininess);
+
+	vec3 retval = lambert + phong;
+	return retval;
+}
+
 
 /*
 TODO
 Calcualte the resulting pixel color.
 */
-glm::vec3 computeColor(const vec3 & ray, const vec3 & rayOrigin, const float & T, const object * hitObj) 
+glm::vec3 computeColor(const vec3 & ray, const vec3 & rayOrigin, const float & T, const object * hitObj)
 {
-	/* Debug objects code.
+	/*
+	//Debug objects code.
 	vec3 nothing(10, 10, 10);
 	vec3 planeC(200, 80, 220);
 	vec3 sphereC(90, 200, 30);
@@ -197,22 +246,83 @@ glm::vec3 computeColor(const vec3 & ray, const vec3 & rayOrigin, const float & T
 			return sphereC;
 		return planeC;
 	}
+	return nothing;
 	*/
+	
+	if (T == INFINITY)
+		return vec3(0, 0, 0);
 
 	vec3 finalColor(0,0,0);
 	vec3 surfacePoint = T * ray + rayOrigin;
 
+	finalColor.x = (hitObj->ambient[0] + hitObj->emission[0]);
+
+	finalColor.y = (hitObj->ambient[1] + hitObj->emission[1]);
+
+	finalColor.z = (hitObj->ambient[2] + hitObj->emission[2]);
+
+	//finalColor.x = (hitObj->ambient[0]);
+
+	//finalColor.y = (hitObj->ambient[1]);
+
+	//finalColor.z = (hitObj->ambient[2]);
+
+	vec3 diffuse,specular;
+	diffuse.x = hitObj->diffuse[0];
+	diffuse.y = hitObj->diffuse[1];
+	diffuse.z = hitObj->diffuse[2];
+	specular.x = hitObj->specular[0];
+	specular.y = hitObj->specular[1];
+	specular.z = hitObj->specular[2];
+
+	// both of these could be wrong
+	vec3 eyePosition = eyeinit;
+	vec3 eyeDirection = glm::normalize(eyePosition - surfacePoint);
+
+	
 	// loop through lights.
 	for (int i = 0; i < lightsUsed; i++)
 	{
-		//check if this light reaches this point.
-		float dist = rayTraceLight(i, surfacePoint);
+
+		if (lights[i].type = directional)
+		{
+			vec3 direction = glm::normalize(lights[i].dirPos);
+			vec3 half = glm::normalize(direction + eyeDirection);
+			vec3 normal = getSurfaceNormal(ray, rayOrigin, hitObj);
+			vec3 color = actualColorCalc(direction, lights[i].color,normal,half,diffuse, specular, hitObj->shininess,directional);
+			finalColor += color;
+		}
+		else if (lights[i].type = point)
+		{
+			//check if this light reaches this point.
+			float dist = rayTraceLight(i, surfacePoint);
+			if (dist == -1)
+			{
+				// hit did not occur. ignore this light.
+				continue;
+			}
+
+			//vec3 direction = ;
+			//vec3 half = ;
+			//vec3 normal = getSurfaceNormal(ray, rayOrigin, hitObj);
+			//vec3 color = actualColorCalc(direction, lights[i].color, normal, half, diffuse, specular, hitObj->shininess,point);
+
+		}
+
+
+
 
 		// IMPORTANT: use the global var maxDepth to determine the number of recursive calls that should be done for reflection. maxDepth
 
 	}
-	return finalColor;
+	
+	vec3 correctFinalColor = finalColor * 255.0f;
+	//cout << correctFinalColor.x << ","<< correctFinalColor.y << ","<< correctFinalColor.z << endl;
+	return (correctFinalColor);
+	//return vec3(100,100,100);
+	
 }
+
 
 
 
@@ -267,7 +377,8 @@ void writeImage() {
 
 			// CALCULATE COLOR
 			vec3 color = computeColor(ray, eyeinit, minT, closestObj);
-			
+			vec3 myine(0, 1, 1);
+			//setPixel(pixelW, pixelH, myine * 255.0f);
 			setPixel(pixelW, pixelH, color);
 		}
 	}
