@@ -43,13 +43,12 @@ void saveScreenshot(string fname) {
 // Shortcut ease of use function for setting the value of a pixel.
 void setPixel(int i, int j, vec3 rgb)
 {
-	int base = j * (3 * w) + (i * 3);//
-	//int base = i * (3 * h) + (j * 3);
-	//debug
+	vec3 convertedRGB = rgb * 255.0f;
+	int base = j * (3 * w) + (i * 3);
 
-	pixels[base] = rgb.z;
-	pixels[base + 1] = rgb.y; // ((float)base / (float)( 3 * w * h)) * 255.0f;
-	pixels[base + 2] = rgb.x;
+	pixels[base] = convertedRGB.z;
+	pixels[base + 1] = convertedRGB.y;
+	pixels[base + 2] = convertedRGB.x;
 	return;
 }
 
@@ -190,7 +189,7 @@ float rayTraceLight(int lightIndex, vec3 surfacePoint)
 
 	float lightDist = glm::length(lights[lightIndex].dirPos - surfacePoint);
 
-	vec3 usedSurfacePoint = surfacePoint + (0.0001f) * sToLight;
+	vec3 usedSurfacePoint = surfacePoint + (0.001f) * sToLight;
 	
 
 	for (int i = 0; i < numobjects; i++)
@@ -256,12 +255,13 @@ vec3 getSurfaceNormal(const vec3 & ray, const vec3 & rayOrigin, float T, const v
 		float alpha = glm::length(surfacePoint - A);
 		float beta = glm::length(surfacePoint - B);
 		float gamma = glm::length(surfacePoint - C);
+		cerr << "EEERRRRRRRRRORRRRR: YOU DIDNT IMPLEMENT TRIANGLE NORM NORMAL CALCULATIONS!";
 	}
 	return glm::normalize(finalNormal);
 }
 
 
-vec3 actualColorCalc(const vec3 direction, const vec3 lightcolor, const vec3 normal, const vec3 halfvec, const vec3 mydiffuse, const vec3 myspecular, const float myshininess, lightType type, double distToLight)
+vec3 actualColorCalc(const vec3 direction, const vec3 lightcolor, const vec3 normal, const vec3 halfvec, const vec3 mydiffuse, const vec3 myspecular, const float myshininess, lightType typeOfLight, double distToLight)
 {
 	//TODO// Implement attenuation.
 	float nDotL = dot(normal, direction);
@@ -271,10 +271,12 @@ vec3 actualColorCalc(const vec3 direction, const vec3 lightcolor, const vec3 nor
 	vec3 phong = myspecular * lightcolor * std::pow(std::fmax(nDotH, 0.0f), myshininess);
 
 	vec3 retval = (lambert + phong);
-
-	if (type == point)
+	
+	if (typeOfLight == point)
 	{
+		
 		float attenValue = (attenuation[0]) + (attenuation[1] * distToLight) + (attenuation[2] * distToLight * distToLight);
+		//cout <<"atten: "<< attenValue << endl;
 		retval = retval / attenValue;
 	}
 	
@@ -309,8 +311,7 @@ glm::vec3 computeColor(const vec3 & ray, const vec3 & rayOrigin, const float & T
 	vec3 eyePosition = rayOrigin; //eyeinit;
 	vec3 eyeDirection = glm::normalize(eyePosition - surfacePoint);
 
-	//cout << finalColor.x<<", "<<finalColor.y<<", "<<finalColor.z <<endl;
-	// loop through lights.
+	
 	for (int i = 0; i < lightsUsed; i++)
 	{
 
@@ -321,18 +322,14 @@ glm::vec3 computeColor(const vec3 & ray, const vec3 & rayOrigin, const float & T
 			vec3 normal = getSurfaceNormal(ray, rayOrigin, T,surfacePoint ,hitObj);
 			vec3 color = actualColorCalc(direction, lights[i].color,normal,half,diffuse, specular, hitObj->shininess,directional,0);
 
-			//if (glm::length(hitObj->specular) != 0)
-			//{
-				vec3 reflectColor = reflectCall(depth, ray, normal, surfacePoint);
-				vec3 finalReflect(reflectColor.x * hitObj->specular[0], reflectColor.y * hitObj->specular[1], reflectColor.z * hitObj->specular[2]);
-				finalColor += finalReflect;
-			//}
+
+			//vec3 reflectColor = 0.001f * specular * reflectCall(depth, ray, normal, surfacePoint);
+			//finalColor += reflectColor;
 			finalColor += color;
-			
 		}
 		else if (lights[i].type == point)
 		{
-			//TODO attenuation.
+			
 			
 			//check if this light reaches this point.
 			//cout << finalColor.x << ", " << finalColor.y << ", " << finalColor.z << endl;
@@ -347,30 +344,19 @@ glm::vec3 computeColor(const vec3 & ray, const vec3 & rayOrigin, const float & T
 			vec3 normal = getSurfaceNormal(ray, rayOrigin, T, surfacePoint, hitObj);
 			vec3 color = actualColorCalc(direction, lights[i].color, normal, half, diffuse, specular, hitObj->shininess, point, dist);
 
-			vec3 reflectColor = reflectCall(depth, ray, normal, surfacePoint);
-
-			//vec3 finalReflect(reflectColor.x * hitObj->specular[0], reflectColor.y * hitObj->specular[1], reflectColor.z * hitObj->specular[2]);
-			//vec3 finalReflect(reflectColor);
-			vec3 finalReflect = (specular * reflectColor) / (attenuation[0] + attenuation[1] * dist + attenuation[2] * dist * dist);
-			finalColor += finalReflect;
 			if (dist >= 0)
 			{
+				//cout << "Point Light Used" << endl;
 				finalColor += color;
-			}
-			else
-			{
-				
-			}
-			
+			}	
 		}
-
-
 	}
+
+	vec3 normal = getSurfaceNormal(ray, rayOrigin, T, surfacePoint, hitObj);
+	vec3 reflectColor = specular * reflectCall(depth, ray, normal, surfacePoint);
+	finalColor += reflectColor;
 	
-	vec3 correctFinalColor = finalColor * 255.0f;
-	return (correctFinalColor);
-	
-	
+	return finalColor;
 }
 
 
