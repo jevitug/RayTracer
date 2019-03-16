@@ -284,10 +284,7 @@ vec3 actualColorCalc(const vec3 direction, const vec3 lightcolor, const vec3 nor
 
 
 vec3 reflectCall(int depth, const vec3& lightDir, const vec3& normal, const vec3& surfacePoint);
-/*
-TODO
-Calcualte the resulting pixel color.
-*/
+
 glm::vec3 computeColor(const vec3 & ray, const vec3 & rayOrigin, const float & T, const object * hitObj, int depth)
 {
 
@@ -326,12 +323,12 @@ glm::vec3 computeColor(const vec3 & ray, const vec3 & rayOrigin, const float & T
 
 			//if (glm::length(hitObj->specular) != 0)
 			//{
-				vec3 reflectColor = reflectCall(depth, direction, normal, surfacePoint);
+				vec3 reflectColor = reflectCall(depth, ray, normal, surfacePoint);
 				vec3 finalReflect(reflectColor.x * hitObj->specular[0], reflectColor.y * hitObj->specular[1], reflectColor.z * hitObj->specular[2]);
 				finalColor += finalReflect;
 			//}
 			finalColor += color;
-			//cout << "Bingo" << endl;
+			
 		}
 		else if (lights[i].type == point)
 		{
@@ -340,18 +337,24 @@ glm::vec3 computeColor(const vec3 & ray, const vec3 & rayOrigin, const float & T
 			//check if this light reaches this point.
 			//cout << finalColor.x << ", " << finalColor.y << ", " << finalColor.z << endl;
 			float dist = rayTraceLight(i, surfacePoint);
+
+
+			vec3 lightPosition = lights[i].dirPos;
+
+			vec3 direction = glm::normalize(lightPosition - surfacePoint); // COULD BE WRONG
+
+			vec3 half = glm::normalize(direction + eyeDirection);
+			vec3 normal = getSurfaceNormal(ray, rayOrigin, T, surfacePoint, hitObj);
+			vec3 color = actualColorCalc(direction, lights[i].color, normal, half, diffuse, specular, hitObj->shininess, point, dist);
+
+			vec3 reflectColor = reflectCall(depth, ray, normal, surfacePoint);
+
+			//vec3 finalReflect(reflectColor.x * hitObj->specular[0], reflectColor.y * hitObj->specular[1], reflectColor.z * hitObj->specular[2]);
+			//vec3 finalReflect(reflectColor);
+			vec3 finalReflect = (specular * reflectColor) / (attenuation[0] + attenuation[1] * dist + attenuation[2] * dist * dist);
+			finalColor += finalReflect;
 			if (dist >= 0)
 			{
-				vec3 lightPosition = lights[i].dirPos;
-				vec3 direction = glm::normalize(lightPosition - surfacePoint); // COULD BE WRONG
-				vec3 half = glm::normalize(direction + eyeDirection);
-				vec3 normal = getSurfaceNormal(ray, rayOrigin, T, surfacePoint, hitObj);
-				vec3 color = actualColorCalc(direction, lights[i].color, normal, half, diffuse, specular, hitObj->shininess, point, dist);
-
-				vec3 reflectColor = reflectCall(depth, direction, normal, surfacePoint);
-				vec3 finalReflect(reflectColor.x * hitObj->specular[0], reflectColor.y * hitObj->specular[1], reflectColor.z * hitObj->specular[2]);
-				finalColor += finalReflect;
-				
 				finalColor += color;
 			}
 			else
@@ -377,15 +380,22 @@ glm::vec3 computeColor(const vec3 & ray, const vec3 & rayOrigin, const float & T
 2. returns T of ray
 3. updates ray and rayCenter parameters that are passed by referance.
 */
-vec3 reflectCall(int depth, const vec3& lightDir, const vec3& normal, const vec3& surfacePoint)
+vec3 reflectCall(int depth, const vec3& rayIntoSurface, const vec3& normal, const vec3& surfacePoint)
 {
 	if (depth >= maxDepth) {
 		return vec3(0, 0, 0);
 	}
 
+	//this is right
+	vec3 ray = glm::normalize(   2.0f * (glm::dot(glm::normalize(-rayIntoSurface), glm::normalize(normal))) * glm::normalize(normal) + glm::normalize(rayIntoSurface));
+	//vec3 ray =   glm::normalize(  glm::normalize(rayIntoSurface) - (2.0f * (glm::dot(glm::normalize(rayIntoSurface), glm::normalize(normal))) * glm::normalize(rayIntoSurface))   );
 
-	vec3 ray = glm::normalize(  -glm::normalize(lightDir) + 2.0f * (glm::dot(glm::normalize(lightDir), normal)) * normal    );
 	vec3 rayOrigin = surfacePoint + (0.001f) * ray; // pull out of surface a bit
+
+	//vec3 x = glm::normalize(-rayIntoSurface + ray);
+	//if(glm::normalize(-rayIntoSurface + ray) != normal)
+	//	cout << x.x<<", "<< x.y << ", "<< x.z <<endl<< normal.x<<", "<< normal.y << ", "<< normal.z << endl;
+
 
 	float minT = INFINITY;
 	object* hitObj = nullptr;
@@ -409,13 +419,15 @@ vec3 reflectCall(int depth, const vec3& lightDir, const vec3& normal, const vec3
 		}
 	}
 
+
 	// didn't hit any other object, and thus recusion ends here.
 	if (hitObj == nullptr)
 	{
 		return vec3(0, 0, 0);
 	}
 
-	return computeColor(ray, rayOrigin, minT, hitObj, depth + 1);
+
+	return computeColor(ray, surfacePoint, minT, hitObj, depth + 1);
 
 }
 
