@@ -233,21 +233,7 @@ vec3 getSurfaceNormal(const vec3 & ray, const vec3 & rayOrigin, float T, const v
 		vec3 originalPoint = vec3(glm::inverse(hitObj->outerTransform) * vec4(surfacePoint,1));
 		mat4 normMat = glm::transpose(glm::inverse(hitObj->outerTransform));
 		vec3 baseNormal = originalPoint - vec3(hitObj->baseTransform * vec4(0,0,0,1));
-		//vec3 baseNormal = surfacePoint - vec3(hitObj->transform * vec4(0, 0, 0, 1));
 		finalNormal = glm::normalize(vec3(normMat * vec4(baseNormal, 0)));
-		
-		//vec3 modelRay = vec3(glm::inverse(hitObj->outerTransform) * vec4(ray.x, ray.y, ray.z, 0));
-		//vec3 spherePos = vec3(hitObj->baseTransform * vec4(0, 0, 0, 1)); // get the untransformed sphere position.
-		//vec3 rayOriginTrans = vec3(glm::inverse(hitObj->outerTransform) * vec4(rayOrigin.x, rayOrigin.y, rayOrigin.z, 1));
-
-		//vec3 preTransHit = modelRay * T + rayOriginTrans;
-
-		//vec3 preTransNormal = glm::normalize(preTransHit - spherePos);
-
-		//finalNormal = glm::normalize(vec3((hitObj->outerTransform * vec4(preTransNormal,0))));
-		
-		//vec3 preTransNormal = sur
-		//finalNormal = hitObj->normal;
 	}
 	else if (hitObj->type == triangle)
 	{
@@ -296,17 +282,14 @@ vec3 actualColorCalc(const vec3 direction, const vec3 lightcolor, const vec3 nor
 }
 
 
+
+vec3 reflectCall(int depth, const vec3& lightDir, const vec3& normal, const vec3& surfacePoint);
 /*
 TODO
 Calcualte the resulting pixel color.
 */
 glm::vec3 computeColor(const vec3 & ray, const vec3 & rayOrigin, const float & T, const object * hitObj, int depth)
 {
-
-	// POTENTIAL PROBLEM:: T for ray might not be directly compareable in raytracelight.
-
-	//if (T == INFINITY)
-	//	return vec3(0, 0, 0);
 
 	vec3 finalColor(0,0,0);
 	vec3 surfacePoint = T * ray + rayOrigin;
@@ -340,6 +323,13 @@ glm::vec3 computeColor(const vec3 & ray, const vec3 & rayOrigin, const float & T
 			vec3 half = glm::normalize(direction + eyeDirection);
 			vec3 normal = getSurfaceNormal(ray, rayOrigin, T,surfacePoint ,hitObj);
 			vec3 color = actualColorCalc(direction, lights[i].color,normal,half,diffuse, specular, hitObj->shininess,directional,0);
+
+			//if (glm::length(hitObj->specular) != 0)
+			//{
+				vec3 reflectColor = reflectCall(depth, direction, normal, surfacePoint);
+				vec3 finalReflect(reflectColor.x * hitObj->specular[0], reflectColor.y * hitObj->specular[1], reflectColor.z * hitObj->specular[2]);
+				finalColor += finalReflect;
+			//}
 			finalColor += color;
 			//cout << "Bingo" << endl;
 		}
@@ -352,17 +342,15 @@ glm::vec3 computeColor(const vec3 & ray, const vec3 & rayOrigin, const float & T
 			float dist = rayTraceLight(i, surfacePoint);
 			if (dist >= 0)
 			{
-				// hit did not occur. ignore this light.
-				
-				
-
-
-
 				vec3 lightPosition = lights[i].dirPos;
 				vec3 direction = glm::normalize(lightPosition - surfacePoint); // COULD BE WRONG
 				vec3 half = glm::normalize(direction + eyeDirection);
 				vec3 normal = getSurfaceNormal(ray, rayOrigin, T, surfacePoint, hitObj);
 				vec3 color = actualColorCalc(direction, lights[i].color, normal, half, diffuse, specular, hitObj->shininess, point, dist);
+
+				vec3 reflectColor = reflectCall(depth, direction, normal, surfacePoint);
+				vec3 finalReflect(reflectColor.x * hitObj->specular[0], reflectColor.y * hitObj->specular[1], reflectColor.z * hitObj->specular[2]);
+				finalColor += finalReflect;
 				//if (hitObj->type == triangle)
 				//	cout << "--------"<< color.x<<"," << color.y<< ", "<<color.z<< normal.x <<"," << normal.y << "," << normal.z << endl;
 				finalColor += color;
@@ -376,20 +364,62 @@ glm::vec3 computeColor(const vec3 & ray, const vec3 & rayOrigin, const float & T
 		}
 
 
-
-
-		// IMPORTANT: use the global var maxDepth to determine the number of recursive calls that should be done for reflection. maxDepth
-
 	}
 	
 	vec3 correctFinalColor = finalColor * 255.0f;
-	//cout << correctFinalColor.x << ","<< correctFinalColor.y << ","<< correctFinalColor.z << endl;
 	return (correctFinalColor);
-	//return vec3(100,100,100);
+	
 	
 }
 
 
+
+/*
+1. does reflection raytrace.
+2. returns T of ray
+3. updates ray and rayCenter parameters that are passed by referance.
+*/
+vec3 reflectCall(int depth, const vec3& lightDir, const vec3& normal, const vec3& surfacePoint)
+{
+	if (depth >= maxDepth) {
+		return vec3(0, 0, 0);
+	}
+
+
+	vec3 ray = glm::normalize(-glm::normalize(lightDir) + 2.0f * (glm::dot(glm::normalize(lightDir), normal)) * normal);
+	vec3 rayOrigin = surfacePoint + (0.0001f) * ray; // pull out of surface a bit
+
+	float minT = INFINITY;
+	object* hitObj = nullptr;
+
+	for (int i = 0; i < numobjects; i++)
+	{
+		float T = -1;
+		if (objects[i].type == sphere)
+		{
+			T = rayTraceSphere(rayOrigin, ray, objects[i]);
+		}
+		else if (objects[i].type == triangle || objects[i].type == triangleNorm)
+		{
+			T = rayTraceTriangle(rayOrigin, ray, objects[i]);
+		}
+
+		if (T >= 0 && T < minT)
+		{
+			minT = T;
+			hitObj = &objects[i];
+		}
+	}
+
+	// didn't hit any other object, and thus recusion ends here.
+	if (hitObj == nullptr)
+	{
+		return vec3(0, 0, 0);
+	}
+
+	return computeColor(ray, rayOrigin, minT, hitObj, depth + 1);
+
+}
 
 
 void writeImage() {
@@ -414,7 +444,7 @@ void writeImage() {
 			{
 				
 				
-				float T = 0;
+				float T = -1;
 				if (objects[i].type == sphere)
 				{
 					T = rayTraceSphere(eyeinit, ray, objects[i]);
@@ -432,7 +462,7 @@ void writeImage() {
 
 				if (T >= 0 && T < minT)
 				{
-					//cout << "New Hit" << endl;
+					
 					minT = T;
 					closestObj = &objects[i];
 				}
