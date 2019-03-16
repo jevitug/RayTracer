@@ -309,7 +309,7 @@ glm::vec3 computeColor(const vec3 & ray, const vec3 & rayOrigin, const float & T
 	specular.z = hitObj->specular[2];
 
 	// both of these could be wrong
-	vec3 eyePosition = eyeinit;
+	vec3 eyePosition = rayOrigin; //eyeinit;
 	vec3 eyeDirection = glm::normalize(eyePosition - surfacePoint);
 
 	//cout << finalColor.x<<", "<<finalColor.y<<", "<<finalColor.z <<endl;
@@ -351,14 +351,12 @@ glm::vec3 computeColor(const vec3 & ray, const vec3 & rayOrigin, const float & T
 				vec3 reflectColor = reflectCall(depth, direction, normal, surfacePoint);
 				vec3 finalReflect(reflectColor.x * hitObj->specular[0], reflectColor.y * hitObj->specular[1], reflectColor.z * hitObj->specular[2]);
 				finalColor += finalReflect;
-				//if (hitObj->type == triangle)
-				//	cout << "--------"<< color.x<<"," << color.y<< ", "<<color.z<< normal.x <<"," << normal.y << "," << normal.z << endl;
+				
 				finalColor += color;
 			}
 			else
 			{
-				//if (hitObj->type == triangle)
-					//cout << "Tri Not hit: " << finalColor.x << ", " << finalColor.y << ", " << finalColor.z << endl;
+				
 			}
 			
 		}
@@ -386,8 +384,8 @@ vec3 reflectCall(int depth, const vec3& lightDir, const vec3& normal, const vec3
 	}
 
 
-	vec3 ray = glm::normalize(-glm::normalize(lightDir) + 2.0f * (glm::dot(glm::normalize(lightDir), normal)) * normal);
-	vec3 rayOrigin = surfacePoint + (0.0001f) * ray; // pull out of surface a bit
+	vec3 ray = glm::normalize(  -glm::normalize(lightDir) + 2.0f * (glm::dot(glm::normalize(lightDir), normal)) * normal    );
+	vec3 rayOrigin = surfacePoint + (0.001f) * ray; // pull out of surface a bit
 
 	float minT = INFINITY;
 	object* hitObj = nullptr;
