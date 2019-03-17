@@ -319,7 +319,7 @@ void readfile(const char* filename)
 						
 						
 						vertexArray[vertCount].transform = transfstack.top() * Transform::translate(values[0], values[1], values[2]);
-						cout << "Vertex Read: " << vertCount << ", " << (vertexArray[vertCount].transform * vec4(0,0,0,1)).x << endl;
+						//cout << "Vertex Read: " << vertCount << ", " << (vertexArray[vertCount].transform * vec4(0,0,0,1)).x << endl;
 						vertCount++;
 						
 					}

@@ -81,7 +81,7 @@ EXTERN struct vertex {
 
 
 // For multiple objects, read from a file.  
-const int maxobjects = 1000;
+const int maxobjects = 100000;
 EXTERN int numobjects;
 EXTERN struct object {
 	shape type;
@@ -100,3 +100,8 @@ EXTERN struct object {
 	vertex verticies[3];
 
 } objects[maxobjects];
+
+
+const int maxGridDim = 30; //goes 1/2 this far out of the origin
+const float gridSize = 1;
+
