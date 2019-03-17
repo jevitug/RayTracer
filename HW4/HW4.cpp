@@ -286,35 +286,20 @@ vec3 getSurfaceNormal(const vec3 & ray, const vec3 & rayOrigin, float T, const v
 		vec3 A = vec3(hitObj->verticies[0].transform * vec4(0, 0, 0, 1));
 		vec3 B = vec3(hitObj->verticies[1].transform * vec4(0, 0, 0, 1));
 		vec3 C = vec3(hitObj->verticies[2].transform * vec4(0, 0, 0, 1));
-		//float alpha = glm::length(surfacePoint - A);
-		///float beta = glm::length(surfacePoint - B);
-		//float gamma = glm::length(surfacePoint - C);
-		//vec3 normal = glm::cross((B-A),(C-A)) ;
 		
-		vec3 v0 = B - A, v1 = C - A, v2 = surfacePoint - A;
-		float d00 = glm::dot(v0, v0);
-		float d01 = glm::dot(v0, v1);
-		float d11 = glm::dot(v1, v1);
-		float d20 = glm::dot(v2, v0);
-		float d21 = glm::dot(v2, v1);
-		float denom = d00 * d11 - d01 * d01;
-		float v = (d11 * d20 - d01 * d21) / denom; //beta
-		float w = (d00 * d21 - d01 * d20) / denom; // gamma
-		float u = 1.0f - v - w; //alpha
+		vec3 AB = B - A;
+		vec3 AC = C - A;
+		vec3 AP = surfacePoint - A;
+		float ABAB = glm::dot(AB, AB); //d00
+		float ABAC = glm::dot(AB, AC); //d01
+		float ACAC = glm::dot(AC, AC); //d11
+		float APAB = glm::dot(AP, AB); //d20
+		float APAC = glm::dot(AP, AC); //d21
+		float beta = (d11 * d20 - d01 * d21) / (d00 * d11 - d01 * d01);
+		float gamma = (d00 * d21 - d01 * d20) / (d00 * d11 - d01 * d01);
+		float alpha = 1.0f - beta - gamma;
 
-		finalNormal = u * hitObj->verticies[0].normal + v * hitObj->verticies[1].normal + w * hitObj->verticies[2].normal;
-		
-		//cout << "tri norm" << endl;
-		/*
-		vec3 BA = A - B;
-		vec3 BC = C - B;
-		vec3 basicSurfaceNormal = glm::normalize(glm::cross(BA, BC));
-		float compare = glm::dot(basicSurfaceNormal, glm::normalize(ray));
-		float finalSign = std::copysign(1, compare);
-		finalNormal = basicSurfaceNormal * finalSign * -1.0f;
-		*/
-		//float AreaTotal = glm::dot(normal, glm::cross((),()));
-		
+		finalNormal = alpha * hitObj->verticies[0].normal + beta * hitObj->verticies[1].normal + gamma * hitObj->verticies[2].normal;
 	}
 	return glm::normalize(finalNormal);
 }
