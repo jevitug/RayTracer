@@ -7,10 +7,23 @@ edX Username: DAMann
 email: damann@ucsd.edu
 
 link to edX grader:
-https://lifan.s3.amazonaws.com/hw3/a06f7d76591a0a5158cad65b7554d19a/20190317020257/index.html
+https://lifan.s3.amazonaws.com/hw3/a06f7d76591a0a5158cad65b7554d19a/20190318230925/index.html
 
 Acceleration Structure:
  We did not have time to implement an accelration structure.
+
+
+Files:
+The test images that were submitted to edX are containted in folder "submitPictures".
+All the source files are in HW4 folder.
+The source files are:
+  readfile.h
+  readfile.cpp
+  Transform.h
+  Transform.cpp
+  variables.h
+  HW4.cpp  
+
 
 IMPORTANT NOTES ON RUNNING THE CODE:
   In this zip file I have included my program in executable form, inside of the
@@ -21,9 +34,8 @@ for release x86, as release optimizes the code greatly. I compiled the code usin
 Microsoft Visual Studios 2017.
 
 NOTES:
-  I was unable to get the 6th test scene to run. Test scenes 4,5, and 7 all run though.
-Because we didn't implement an acceleration structure, scene 7 takes 1 hour 30 mins to 
+  Because we didn't implement an acceleration structure, scene 7 takes 1 hour 30 mins to 
 finish.
 
-The test images that were submitted to edX are containted in folder "testImages".
+
 

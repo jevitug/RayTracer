@@ -210,7 +210,7 @@ float rayTraceLight(int lightIndex, vec3 surfacePoint)
 		}
 
 		// hit an object and it is closer than the light.
-		float distToObject = glm::length(T * sToLight + usedSurfacePoint);
+		float distToObject = glm::length(T * sToLight);
 		if (T != -1 && distToObject < lightDist)
 		{
 			return -1;
@@ -290,11 +290,11 @@ vec3 getSurfaceNormal(const vec3 & ray, const vec3 & rayOrigin, float T, const v
 		vec3 AB = B - A;
 		vec3 AC = C - A;
 		vec3 AP = surfacePoint - A;
-		float ABAB = glm::dot(AB, AB); //d00
-		float ABAC = glm::dot(AB, AC); //ABAC
-		float ACAC = glm::dot(AC, AC); //ACAC
-		float APAB = glm::dot(AP, AB); //APAB
-		float APAC = glm::dot(AP, AC); //APAC
+		float ABAB = glm::dot(AB, AB); 
+		float ABAC = glm::dot(AB, AC); 
+		float ACAC = glm::dot(AC, AC); 
+		float APAB = glm::dot(AP, AB); 
+		float APAC = glm::dot(AP, AC);
 		float beta = (ACAC * APAB - ABAC * APAC) / (ABAB * ACAC - ABAC * ABAC);
 		float gamma = (ABAB * APAC - ABAC * APAB) / (ABAB * ACAC - ABAC * ABAC);
 		float alpha = 1.0f - beta - gamma;

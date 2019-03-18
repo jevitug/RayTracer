@@ -18,26 +18,10 @@ d:\documents\school\cse167\hw4\hw4\hw4\hw4.cpp(51): warning C4244: '=': conversi
 d:\documents\school\cse167\hw4\hw4\hw4\hw4.cpp(280): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
 d:\documents\school\cse167\hw4\hw4\hw4\hw4.cpp(323): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
 d:\documents\school\cse167\hw4\hw4\hw4\hw4.cpp(577): warning C4101: 'bingo': unreferenced local variable
-  readfile.cpp
-d:\documents\school\cse167\hw4\hw4\hw4\transform.h(24): warning C4305: 'initializing': truncation from 'double' to 'float'
-d:\documents\school\cse167\hw4\hw4\hw4\variables.h(80): warning C4091: 'extern ': ignored on left of 'vertex' when no variable is declared
-d:\documents\school\cse167\hw4\hw4\hw4\readfile.cpp(181): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
-d:\documents\school\cse167\hw4\hw4\hw4\readfile.cpp(292): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-d:\documents\school\cse167\hw4\hw4\hw4\readfile.cpp(305): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
-d:\documents\school\cse167\hw4\hw4\hw4\readfile.cpp(364): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-d:\documents\school\cse167\hw4\hw4\hw4\readfile.cpp(365): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-d:\documents\school\cse167\hw4\hw4\hw4\readfile.cpp(366): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-d:\documents\school\cse167\hw4\hw4\hw4\readfile.cpp(367): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-d:\documents\school\cse167\hw4\hw4\hw4\readfile.cpp(369): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-d:\documents\school\cse167\hw4\hw4\hw4\readfile.cpp(432): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-d:\documents\school\cse167\hw4\hw4\hw4\readfile.cpp(433): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-d:\documents\school\cse167\hw4\hw4\hw4\readfile.cpp(434): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-d:\documents\school\cse167\hw4\hw4\hw4\readfile.cpp(435): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-d:\documents\school\cse167\hw4\hw4\hw4\readfile.cpp(437): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-  Transform.cpp
-d:\documents\school\cse167\hw4\hw4\hw4\transform.h(24): warning C4305: 'initializing': truncation from 'double' to 'float'
 LINK : warning LNK4075: ignoring '/INCREMENTAL' due to '/LTCG' specification
   Generating code
-  All 440 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  0 of 440 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   HW4.vcxproj -> D:\Documents\School\cse167\hw4\HW4\Release\HW4.exe
