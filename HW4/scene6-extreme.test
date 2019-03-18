@@ -1,7 +1,7 @@
 #Cornell Box
 size 640 480
 output scene6.png
-camera 0 0 2 0 0 -1 0 1 0 45
+camera 0 0 1 0 0 -1 0 1 0 45
 
 point 0 0.44 -1.5 0.8 0.8 0.8
 
@@ -49,7 +49,7 @@ diffuse 0.2 0.5 0.7
 specular 0.2 0.2 0.2
 pushTransform
 translate 0.4 -0.7 -1.5
-rotate 0 1 0 -15
+#rotate 0 1 0 -15
 scale 0.2 0.2 0.2
 diffuse 1 1 1
 

@@ -291,12 +291,12 @@ vec3 getSurfaceNormal(const vec3 & ray, const vec3 & rayOrigin, float T, const v
 		vec3 AC = C - A;
 		vec3 AP = surfacePoint - A;
 		float ABAB = glm::dot(AB, AB); //d00
-		float ABAC = glm::dot(AB, AC); //d01
-		float ACAC = glm::dot(AC, AC); //d11
-		float APAB = glm::dot(AP, AB); //d20
-		float APAC = glm::dot(AP, AC); //d21
-		float beta = (d11 * d20 - d01 * d21) / (d00 * d11 - d01 * d01);
-		float gamma = (d00 * d21 - d01 * d20) / (d00 * d11 - d01 * d01);
+		float ABAC = glm::dot(AB, AC); //ABAC
+		float ACAC = glm::dot(AC, AC); //ACAC
+		float APAB = glm::dot(AP, AB); //APAB
+		float APAC = glm::dot(AP, AC); //APAC
+		float beta = (ACAC * APAB - ABAC * APAC) / (ABAB * ACAC - ABAC * ABAC);
+		float gamma = (ABAB * APAC - ABAC * APAB) / (ABAB * ACAC - ABAC * ABAC);
 		float alpha = 1.0f - beta - gamma;
 
 		finalNormal = alpha * hitObj->verticies[0].normal + beta * hitObj->verticies[1].normal + gamma * hitObj->verticies[2].normal;
@@ -307,7 +307,7 @@ vec3 getSurfaceNormal(const vec3 & ray, const vec3 & rayOrigin, float T, const v
 
 vec3 actualColorCalc(const vec3 direction, const vec3 lightcolor, const vec3 normal, const vec3 halfvec, const vec3 mydiffuse, const vec3 myspecular, const float myshininess, lightType typeOfLight, double distToLight)
 {
-	//TODO// Implement attenuation.
+	
 	float nDotL = dot(normal, direction);
 	vec3 lambert = mydiffuse * lightcolor * std::fmax(nDotL, 0.0f);
 
@@ -316,11 +316,11 @@ vec3 actualColorCalc(const vec3 direction, const vec3 lightcolor, const vec3 nor
 
 	vec3 retval = (lambert + phong);
 	
+	//attenuation
 	if (typeOfLight == point)
 	{
 		
 		float attenValue = (attenuation[0]) + (attenuation[1] * distToLight) + (attenuation[2] * distToLight * distToLight);
-		//cout <<"atten: "<< attenValue << endl;
 		retval = retval / attenValue;
 	}
 	
@@ -365,7 +365,7 @@ glm::vec3 computeColor(const vec3 & ray, const vec3 & rayOrigin, const float & T
 
 			
 
-			//cout << lights[i].dirPos.x << ","<<lights[i].dirPos.y << ","<<lights[i].dirPos.z << endl;
+			
 			if (result >= 0)
 			{
 				vec3 direction = glm::normalize(lights[i].dirPos);
@@ -375,21 +375,14 @@ glm::vec3 computeColor(const vec3 & ray, const vec3 & rayOrigin, const float & T
 				vec3 normal = getSurfaceNormal(ray, rayOrigin, T, surfacePoint, hitObj);
 
 				vec3 color = actualColorCalc(direction, lights[i].color, normal, half, diffuse, specular, hitObj->shininess, directional, 0);
-				//cout << "applying directional light: "<< color.x << ","<< color.y << ","<< color.z << endl;
-				//cout << normal.x << "," << normal.y << "," << normal.z << endl;
+				
 				finalColor += color;
 				
 			}
 		}
 		else if (lights[i].type == point)
 		{
-			/*
-			if (diffuse == vec3(1, 1, 1))
-			{
-				finalColor += vec3(1, 1, 0);
-				continue;
-			}
-			*/
+			
 			float dist = rayTraceLight(i, surfacePoint);
 
 			
@@ -402,8 +395,7 @@ glm::vec3 computeColor(const vec3 & ray, const vec3 & rayOrigin, const float & T
 				vec3 half = glm::normalize(direction + eyeDirection);
 				vec3 normal = getSurfaceNormal(ray, rayOrigin, T, surfacePoint, hitObj);
 				vec3 color = actualColorCalc(direction, lights[i].color, normal, half, diffuse, specular, hitObj->shininess, point, dist);
-				//cout << normal.x << "," << normal.y << "," << normal.z << endl;
-				//cout << "Point Light Used" << endl;
+				
 				finalColor += color;
 			}	
 		}
@@ -432,13 +424,11 @@ vec3 reflectCall(int depth, const vec3& rayIntoSurface, const vec3& normal, cons
 
 	//this is right
 	vec3 ray = glm::normalize(   2.0f * (glm::dot(glm::normalize(-rayIntoSurface), glm::normalize(normal))) * glm::normalize(normal) + glm::normalize(rayIntoSurface));
-	//vec3 ray =   glm::normalize(  glm::normalize(rayIntoSurface) - (2.0f * (glm::dot(glm::normalize(rayIntoSurface), glm::normalize(normal))) * glm::normalize(rayIntoSurface))   );
+
 
 	vec3 rayOrigin = surfacePoint + (0.001f) * ray; // pull out of surface a bit
 
-	//vec3 x = glm::normalize(-rayIntoSurface + ray);
-	//if(glm::normalize(-rayIntoSurface + ray) != normal)
-	//	cout << x.x<<", "<< x.y << ", "<< x.z <<endl<< normal.x<<", "<< normal.y << ", "<< normal.z << endl;
+	
 
 
 	float minT = INFINITY;

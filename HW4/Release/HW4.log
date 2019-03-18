@@ -16,8 +16,8 @@ d:\documents\school\cse167\hw4\hw4\hw4\hw4.cpp(51): warning C4244: '=': conversi
               T=float
           ]
 d:\documents\school\cse167\hw4\hw4\hw4\hw4.cpp(280): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-d:\documents\school\cse167\hw4\hw4\hw4\hw4.cpp(337): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-d:\documents\school\cse167\hw4\hw4\hw4\hw4.cpp(602): warning C4101: 'bingo': unreferenced local variable
+d:\documents\school\cse167\hw4\hw4\hw4\hw4.cpp(323): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+d:\documents\school\cse167\hw4\hw4\hw4\hw4.cpp(577): warning C4101: 'bingo': unreferenced local variable
   readfile.cpp
 d:\documents\school\cse167\hw4\hw4\hw4\transform.h(24): warning C4305: 'initializing': truncation from 'double' to 'float'
 d:\documents\school\cse167\hw4\hw4\hw4\variables.h(80): warning C4091: 'extern ': ignored on left of 'vertex' when no variable is declared
