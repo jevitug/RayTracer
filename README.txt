@@ -1,17 +1,11 @@
 My Name: Daniel Mann
-My PID: A12863438
-
 Partner's Name: Jared Vitug
-
-edX Username: DAMann
-email: damann@ucsd.edu
 
 link to edX grader:
 https://lifan.s3.amazonaws.com/hw3/a06f7d76591a0a5158cad65b7554d19a/20190318230925/index.html
 
 Acceleration Structure:
  We did not have time to implement an accelration structure.
-
 
 Files:
 The test images that were submitted to edX are containted in folder "submitPictures".
